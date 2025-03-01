@@ -15,7 +15,6 @@ package-lock.json
 logs
 log
 build
-dist
 node_modules
 .direnv
 result
@@ -45,3 +44,4 @@ coverage
 *~
 
 *temp
+.vercel
