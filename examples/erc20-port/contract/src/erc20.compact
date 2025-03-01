@@ -1,0 +1,111 @@
+pragma language_version >= 0.14.0;
+
+import CompactStandardLibrary;
+
+// **Ledger State Definitions**
+// Sealed constants for token metadata
+export sealed ledger tokenName: Opaque<"string">;
+export sealed ledger tokenSymbol: Opaque<"string">;
+export sealed ledger tokenDecimals: Uint<8>;
+// Total supply of tokens
+export ledger totalSupply: Uint<222>;
+// Mapping of addresses to their token balances
+export ledger balances: Map<Bytes<32>, Uint<222>>;
+// Mapping of addresses to allowances (owner -> spender -> amount)
+export ledger allowances: Map<Bytes<32>, Map<Bytes<32>, Uint<222>>>;
+
+// **Constructor**
+// Initializes the contract with an initial supply and token metadata
+constructor(
+  initial_supply: Uint<222>,
+  mint_address: Bytes<32>,
+  name: Opaque<"string">,
+  symbol: Opaque<"string">,
+  decimals: Uint<8>
+) {
+  balances.insert(mint_address, initial_supply);
+  totalSupply = initial_supply;
+  tokenName = name;
+  tokenSymbol = symbol;
+  tokenDecimals = decimals;
+}
+
+// **Helper Circuit**
+// Computes an address from a secret key
+export circuit compute_address(sk: Bytes<32>): Bytes<32> {
+  return persistent_hash<Vector<2, Bytes<32>>>(
+    [pad(32, "merc20:sk"), sk]
+  );
+}
+
+// **ERC-20 Functions as Circuits**
+
+// Returns the total supply of tokens
+export circuit getTotalSupply(): Uint<222> {
+  return totalSupply;
+}
+
+// Returns the balance of a specified address
+export circuit balanceOf(owner: Bytes<32>): Uint<222> {
+  return balances.member(owner) ? balances.lookup(owner) : 0;
+}
+
+// Returns the allowance of a spender for a specific owner
+export circuit allowance(owner: Bytes<32>, spender: Bytes<32>): Uint<222> {
+  if (allowances.member(owner)) {
+    if (allowances.lookup(owner).member(spender)) {
+      return allowances.lookup(owner).lookup(spender);
+    } else {
+      return 0;
+    }
+  } else {
+    return 0;
+  }
+}
+
+// Witness to retrieve the caller's secret key
+witness get_secret_key(): Bytes<32>;
+
+// Transfers tokens from the caller to another address
+export circuit transfer(to: Bytes<32>, amount: Uint<222>): [] {
+  const sk = get_secret_key();
+  const from = disclose(compute_address(sk));
+  const from_balance = balances.member(from) ? balances.lookup(from) : 0;
+  assert from_balance >= amount "Insufficient balance"; 
+  balances.insert(from, from_balance - amount);
+  const to_balance = balances.member(to) ? balances.lookup(to) : 0;
+  balances.insert(to, (to_balance + amount) as Uint<222>);
+}
+
+// Approves a spender to transfer tokens on behalf of the caller
+export circuit approve(spender: Bytes<32>, amount: Uint<222>): [] {
+  const sk = get_secret_key();
+  const owner = disclose(compute_address(sk));
+  if (!allowances.member(owner)) {
+    allowances.insert(owner, default<Map<Bytes<32>, Uint<222>>>);
+  }
+  allowances.lookup(owner).insert(spender, amount);
+}
+
+// Transfers tokens from one address to another using allowance
+export circuit transferFrom(from: Bytes<32>, to: Bytes<32>, amount: Uint<222>): [] {
+  const sk = get_secret_key();
+  const spender = disclose(compute_address(sk));
+
+  assert allowances.member(from) "No allowance set";
+
+  assert allowances.lookup(from).member(spender) "No allowance set";
+
+  const allowance = allowances.lookup(from).lookup(spender);
+  assert allowance >= amount "Insufficient allowance";
+  
+  const from_balance = balances.member(from) ? balances.lookup(from) : 0;
+  assert from_balance >= amount "Insufficient balance";
+  
+  assert from_balance >= amount "Insufficient balance";
+
+  allowances.lookup(from).insert(spender, allowance - amount);
+  balances.insert(from, from_balance - amount);
+  const to_balance = balances.member(to) ? balances.lookup(to) : 0;
+  balances.insert(to, (to_balance + amount) as Uint<222>);
+}
