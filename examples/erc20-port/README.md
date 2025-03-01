@@ -1,22 +1,9 @@
-# Bulletin board contract and DApp
+# ERC-20 port (MERC-20) and DApp
 
-This example implements a simple one-item bulletin board.  It allows
-users to post a single message at a time, and only the user who posted
-the message can take it down and make the board vacant again.
+This example implements a port of the Ethereum ERC-20 standard in 
+Compact. The smart contract's ledger is fully unshielded, and the smart
+contract retains a full mapping of all users' balances and allowances.
 
-The full description of the bulletin board scenario, as well as a
-detailed discussion of the code, can be found in part 3 of the
-Midnight developer tutorial.
-
-The `bboard-tutorial` directory contains a version of the bulletin
-board DApp with some parts missing.  The tutorial guides you through
-the process of filling in the missing pieces.  If you are reading this
-in the `bboard-tutorial` directory, **do not expect the code to
-compile until after you have completed the tutorial**.
-
-The `bboard` directory contains the solution to the problems posed in
-the tutorial.  You can think of it as the answer key to the
-`bboard-tutorial` example.  If you are reading this in the `bboard`
-directory, then the code should compile without changes, but do not
-look at it until after you make an effort to complete the exercises by
-following the tutorial.
+The `erc20-cli` directory contains a dApp that can be used to deploy
+a MERC-20 contract and interact with it (such as sending tokens and 
+viewing balances).

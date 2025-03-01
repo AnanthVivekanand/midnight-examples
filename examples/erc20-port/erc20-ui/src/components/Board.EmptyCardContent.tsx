@@ -36,7 +36,7 @@ export const EmptyCardContent: React.FC<Readonly<EmptyCardContentProps>> = ({
           <BoardAddIcon fontSize="large" />
         </Typography>
         <Typography data-testid="board-posted-message" align="center" variant="body2" color="primary.dark">
-          Create a new memecoin, or join an existing one...
+          Create a new memecoin, or interact with an existing one...
         </Typography>
       </CardContent>
       <CardActions disableSpacing>

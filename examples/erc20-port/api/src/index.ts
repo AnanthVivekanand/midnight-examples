@@ -76,9 +76,13 @@ export class MERC20API implements DeployedMERC20API {
       ],
       (ledgerState, privateState) => {
         const userAddress = pureCircuits.compute_address(privateState.secretKey);
+        console.log("user addy 2: ",  deployedContract.deployTxData.private.signingKey);
+        console.log("user addy 3: ", Buffer.from(pureCircuits.compute_address(deployedContract.deployTxData.private.initialPrivateState.secretKey)).toString('hex'));
+        console.log("user address: ", Buffer.from(userAddress).toString('hex'));
         const userBalance = ledgerState.balances.member(userAddress)
           ? ledgerState.balances.lookup(userAddress)
           : BigInt(0);
+        console.log("user balance: ", userBalance);
         return {
           userBalance,
           tokenName: ledgerState.tokenName,
@@ -88,6 +92,7 @@ export class MERC20API implements DeployedMERC20API {
         };
       },
     );
+    console.log('MERC20API constructor');
   }
 
   readonly deployedContractAddress: ContractAddress;

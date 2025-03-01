@@ -17,7 +17,7 @@ import {
   type MERC20DerivedState,
   type DeployedMERC20Contract,
 } from 'midnight-erc20-port-api';
-import { ledger, type Ledger } from 'midnight-erc20-port';
+import { ledger, pureCircuits, type Ledger } from 'midnight-erc20-port';
 import {
   type BalancedTransaction,
   createBalancedTx,
@@ -162,7 +162,8 @@ You can do one of the following:
   4. Check balance
   5. Check allowance
   6. Display token metadata
-  7. Exit
+  7. Compute an address from a SK
+  8. Exit
 Which would you like to do? `;
 
 const mainLoop = async (providers: MERC20Providers, rli: Interface, logger: Logger): Promise<void> => {
@@ -218,6 +219,11 @@ const mainLoop = async (providers: MERC20Providers, rli: Interface, logger: Logg
           await displayLedgerState(providers, merc20Api.deployedContract, logger);
           break;
         case '7':
+          const sk = await rli.question('Enter secret key (in hex): ');
+          const address = Buffer.from(await pureCircuits.compute_address(Uint8Array.from(Buffer.from(sk, 'hex')))).toString('hex');
+          logger.info(`Computed address: ${address}`);
+          break;
+        case '8':
           logger.info('Exiting...');
           return;
         default:
